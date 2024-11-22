@@ -65,7 +65,7 @@ function App() {
     }
   };
 
-//   console.log(chartSuggestions);
+  console.log(chartSuggestions);
   if (!chartSuggestions || typeof chartSuggestions !== 'object') {
     console.error('Invalid data:', chartSuggestions);
     return <div>Error: Data is not available</div>;
@@ -235,7 +235,7 @@ const handleChartClick = (type) => {
           <h2 className="text-3xl font-bold mb-10 text-white text-center">Suggested Dashboard</h2>
           <div className="mt-8 w-full mx-auto">
             <div className={`grid ${Object.keys(chartSuggestions).length <= 4 ? 'grid-cols-1 md:grid-cols-2' : 'grid-cols-1 md:grid-cols-3'} gap-5`}>
-              {Object.entries(chartSuggestions).map(([chartType, axes]) => (
+              {Object.entries(chartSuggestions).map(([chartType, axes]) => ( 
                 <div key={chartType} className="bg-white p-3 rounded-lg border border-gray-200 shadow-lg hover:shadow-xl transition-all duration-300">
                   <h3 className="text-lg font-semibold mb-2 p-1 text-center bg-cyan-900/75 text-white">{chartType} Chart</h3>
                   {renderChart(chartType, axes)}
