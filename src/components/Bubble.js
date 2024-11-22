@@ -17,9 +17,9 @@ const BubbleChart = ({ x, y, size, data }) => {
             data: data.map((row) => ({
               x: row[x],
               y: row[y],
-              r: row[size]*10, // Scale the bubble size
+              r: row[size]*5, // Scale the bubble size
             })),
-            backgroundColor: "rgba(54, 162, 235, 0.5)",
+            backgroundColor: "rgba(14, 116, 144, 0.5)",
           },
         ],
       },

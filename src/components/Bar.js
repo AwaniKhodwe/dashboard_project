@@ -33,7 +33,7 @@ const BarChart = ({ x, y, data }) => {
       {
         label: `Average ${y} vs ${x}`,
         data: values,
-        backgroundColor: "#4CAF50",
+        backgroundColor: ["#155e75", "#0891b2", "#06b6d4", "#67e8f9", "#e0f2fe"],
         borderColor: "#388E3C",
         borderWidth: 1,
       },

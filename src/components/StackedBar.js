@@ -1,22 +1,34 @@
 import React, { useEffect, useRef } from "react";
 import Chart from "chart.js/auto";
 
-const StackedBarChart = ({ category, values, data }) => {
+const StackedBarChart = ({ category, numericalColumn, data }) => {
   const chartRef = useRef(null);
 
   useEffect(() => {
-    if (!category || values.length === 0 || data.length === 0) return;
+    if (!category || !numericalColumn || data.length === 0) return;
 
     const ctx = chartRef.current.getContext("2d");
+
+    // Get unique categories and their corresponding values
+    const uniqueCategories = [...new Set(data.map((row) => row[category]))];
+    const categoryData = uniqueCategories.map((cat) => ({
+      category: cat,
+      value: data
+        .filter((row) => row[category] === cat)
+        .reduce((sum, row) => sum + (row[numericalColumn] || 0), 0),
+    }));
+
     const chart = new Chart(ctx, {
       type: "bar",
       data: {
-        labels: [...new Set(data.map((row) => row[category]))],
-        datasets: values.map((value, index) => ({
-          label: value,
-          data: data.map((row) => row[value]),
-          backgroundColor: `rgba(${index * 50}, ${index * 100}, 200, 0.5)`,
-        })),
+        labels: uniqueCategories, // Unique categories as labels
+        datasets: [
+          {
+            label: numericalColumn,
+            data: categoryData.map((item) => item.value), // Stacked values
+            backgroundColor: "rgba(75, 192, 192, 0.6)",
+          },
+        ],
       },
       options: {
         responsive: true,
@@ -30,14 +42,14 @@ const StackedBarChart = ({ category, values, data }) => {
           },
           y: {
             stacked: true,
-            title: { display: true, text: "Value" },
+            title: { display: true, text: numericalColumn },
           },
         },
       },
     });
 
     return () => chart.destroy();
-  }, [category, values, data]);
+  }, [category, numericalColumn, data]);
 
   return <canvas ref={chartRef} />;
 };

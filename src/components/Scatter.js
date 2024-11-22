@@ -15,7 +15,7 @@ const ScatterPlot = ({ x, y, data }) => {
           x: row[x], // X-axis values
           y: row[y], // Y-axis values
         })),
-        backgroundColor: "#2563eb", // Point color
+        backgroundColor: "#0e7490", // Point color
         borderColor: "#1d4ed8", // Optional: border color
         borderWidth: 1,
         pointRadius: 5, // Size of points

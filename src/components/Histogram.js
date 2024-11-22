@@ -17,8 +17,8 @@ const Histogram = ({ column, data }) => {
           {
             label: `Histogram (${column})`,
             data: values,
-            backgroundColor: "rgba(255, 99, 132, 0.5)",
-            borderColor: "rgba(255, 99, 132, 1)",
+            backgroundColor: "#0e7490",
+            borderColor: "#1d4ed8",
             borderWidth: 1,
           },
         ],

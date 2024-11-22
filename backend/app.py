@@ -35,6 +35,7 @@ def upload_file():
         # Determine column types
         column_types = {}
         for column in df.columns:
+            # print(column,pd.api.types.is_numeric_dtype(df[column]))
             if pd.api.types.is_numeric_dtype(df[column]):
                 column_types[column] = "numerical"
             else:
@@ -52,13 +53,13 @@ def upload_file():
             f"{prompt}\n\nColumn names: {', '.join(df.columns)}"
         )
 
-        print(response.text)
+        # print(response.text)
 
         # Convert the AI's response into a structured dictionary
         suggestions = response.text
 
-        print("Suggestions:")
-        print(suggestions)
+        # print("Suggestions:")
+        # print(suggestions)
 
         # Return results
         return jsonify({

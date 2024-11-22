@@ -4,6 +4,7 @@ import { Line } from "react-chartjs-2";
 const LineChart = ({ x, y, data }) => {
   // Ensure all necessary props are provided
   if (!x || !y || !data) return <p>Please select valid columns for X and Y axes.</p>;
+  console.log(x,y,data)
 
   // Sort data by x-axis values (area) in ascending order
   const sortedData = [...data].sort((a, b) => a[x] - b[x]);
@@ -39,12 +40,12 @@ const LineChart = ({ x, y, data }) => {
       {
         label: `${y} vs ${x}`,
         data: sortedDataPoints.map(point => point.y),
-        borderColor: "#00CED1",
+        borderColor: "#0e7490",
         backgroundColor: "rgba(0, 206, 209, 0.1)",
         fill: true,
         tension: 0.4,
         pointRadius: 4,
-        pointBackgroundColor: "#00CED1",
+        pointBackgroundColor: "#164e63",
         pointBorderColor: "#fff",
         pointBorderWidth: 2,
       },

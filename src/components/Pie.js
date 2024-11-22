@@ -5,9 +5,10 @@ import { Chart, ArcElement, Tooltip, Legend } from 'chart.js';
 // Register necessary components
 Chart.register(ArcElement, Tooltip, Legend);
 
-
 const PieChartComponent = ({ category, data }) => {
   if (!category || !data) return null;
+  console.log(category,data)
+
 
   const aggregatedData = data.reduce((acc, row) => {
     acc[row[category]] = (acc[row[category]] || 0) + 1;
@@ -20,12 +21,16 @@ const PieChartComponent = ({ category, data }) => {
       {
         label: `Distribution of ${category}`,
         data: Object.values(aggregatedData),
-        backgroundColor: ["#2563eb", "#f97316", "#34d399", "#e11d48", "#6366f1"],
+        backgroundColor: ["#155e75", "#0891b2", "#06b6d4", "#67e8f9", "#e0f2fe"],
       },
     ],
   };
 
-  return <Pie data={chartData} />;
+  return (
+    <div className="w-1/2 grid place-self-center">
+        <Pie data={chartData} />
+    </div>
+  )
 };
 
 export default PieChartComponent;
