@@ -31,6 +31,10 @@ function App() {
   const [Size, setSize] = useState("");
   const [chartSuggestions, setChartSuggestions] = useState({});
   const [chartType, setChartType] = useState(null);
+  const [query, setQuery] = useState('');
+  const [answer, setAnswer] = useState('');
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
 
   const handleFileUpload = async (e) => {
     const file = e.target.files[0];
@@ -73,7 +77,7 @@ function App() {
 
 const chartOptions = {
   "numerical-numerical": ["Line", "Scatter", "Bubble"],
-  "categorical-numerical": ["Bar", "StackedBar", "Pie"],
+  "categorical-numerical": ["Bar", "Pie"],
 };
 
 const getAvailableCharts = () => {
@@ -90,8 +94,7 @@ const handleChartClick = (type) => {
   setChartType(type);
 };
 
-
-  // Helper function to render the appropriate chart component
+// Helper function to render the appropriate chart component
   const renderChart = (chartType, axes) => {
     const props = {
       x: axes.x,
@@ -119,6 +122,44 @@ const handleChartClick = (type) => {
     }
   };
 
+  // Handle query submission
+const handleQuery = async () => {
+  if (!query) {
+    setError("Please enter a query.");
+    return;
+  }
+
+  try {
+    setLoading(true);
+    setError('');
+    const response = await fetch('http://localhost:5000/query', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ query }),
+    });
+
+    if (!response.ok) {
+      const data = await response.json();
+      setError(data.error || 'Failed to get the answer.');
+    } else {
+      const data = await response.json();
+      setAnswer(data.answer);
+    }
+  } catch (error) {
+    setError("An error occurred during query.");
+  } finally {
+    setLoading(false);
+  }
+};
+
+// Handle query input change
+const handleQueryChange = (e) => {
+  setQuery(e.target.value);
+};
+
+
   return (
     <div className="min-h-screen bg-cyan-900/20 flex flex-col items-center p-6">
       <h1 className="text-5xl font-extrabold bg-clip-text text-cyan-900 tracking-tight p-5">Data Visualization</h1>
@@ -130,101 +171,132 @@ const handleChartClick = (type) => {
         />
       {columns.length > 0 && (
         <>
-          <div className="w-full max-w-2xl">
-            <div className="flex flex-col gap-4 mt-6 items-center">
-            <div className="grid grid-cols-2 gap-4">
-              <div className="flex items-center gap-2">
-                <label className="whitespace-nowrap rounded-lg bg-cyan-900 text-white px-4 py-2.5 text-sm font-medium">Select X-Axis:</label>
-                <select
-                  value={xAxis}
-                  onChange={(e) => setXAxis(e.target.value)}
-                  className="w-full border-2 border-gray-200 rounded-lg px-4 py-2.5 text-gray-700 focus:outline-none focus:border-cyan-900 focus:ring-2 focus:ring-blue-200 transition-colors duration-200 bg-white shadow-sm hover:border-gray-300"
-                >
-                  <option value="" className="text-gray-500">Select Column</option>
-                  {columns.map((col) => (
-                    <option key={col} value={col} className="text-gray-700">
-                      {col}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <div className="flex items-center gap-2">
-                <label className="whitespace-nowrap rounded-lg bg-cyan-900 text-white px-4 py-2.5 text-sm font-medium">Select Y-Axis:</label>
-                <select
-                  value={yAxis}
-                  onChange={(e) => setYAxis(e.target.value)}
-                  className="w-full border-2 border-gray-200 rounded-lg px-4 py-2.5 text-gray-700 focus:outline-none focus:border-cyan-900 focus:ring-2 focus:ring-blue-200 transition-colors duration-200 bg-white shadow-sm hover:border-gray-300"
-                >
-                  <option value="" className="text-gray-500">Select Column</option>
-                  {columns.map((col) => (
-                    <option key={col} value={col} className="text-gray-700">
-                      {col}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              </div>
-            {xAxis && !yAxis && (
-              <div className="flex items-center m-4">
-              {/* <h3 className="text-lg font-medium m-4">Possible Charts:</h3> */}
-              <div className="flex gap-2">
-                {getAvailableCharts().map((chart) => (
-                  <button
-                    key={chart}
-                    onClick={() => handleChartClick(chart)}
-                    className="bg-cyan-900 text-white px-4 py-2 rounded hover:bg-cyan-700"
-                  >
-                    {chart} Chart
-                  </button>
-                ))}
-              </div>
-            </div>
-            )}
-            {xAxis && yAxis && (
-              <div className="flex items-center m-4">
-                {/* <h3 className="text-lg font-medium m-4">Possible Charts:</h3> */}
-                <div className="flex gap-2">
-                  {getAvailableCharts().map((chart) => (
-                    <button
-                      key={chart}
-                      onClick={() => handleChartClick(chart)}
-                      className="bg-cyan-900 text-white px-4 py-2 rounded hover:bg-cyan-700"
+          <div className="w-full">
+            <div className="grid grid-cols-2">
+              <div>
+                <div className="flex flex-col gap-4 mt-6 items-center">
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="flex items-center gap-2">
+                    <label className="whitespace-nowrap rounded-lg bg-cyan-900 text-white px-4 py-2.5 text-sm font-medium">Select X-Axis:</label>
+                    <select
+                      value={xAxis}
+                      onChange={(e) => setXAxis(e.target.value)}
+                      className="w-full border-2 border-gray-200 rounded-lg px-4 py-2.5 text-gray-700 focus:outline-none focus:border-cyan-900 focus:ring-2 focus:ring-blue-200 transition-colors duration-200 bg-white shadow-sm hover:border-gray-300"
                     >
-                      {chart} Chart
-                    </button>
-                  ))}
+                      <option value="" className="text-gray-500">Select Column</option>
+                      {columns.map((col) => (
+                        <option key={col} value={col} className="text-gray-700">
+                          {col}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <label className="whitespace-nowrap rounded-lg bg-cyan-900 text-white px-4 py-2.5 text-sm font-medium">Select Y-Axis:</label>
+                    <select
+                      value={yAxis}
+                      onChange={(e) => setYAxis(e.target.value)}
+                      className="w-full border-2 border-gray-200 rounded-lg px-4 py-2.5 text-gray-700 focus:outline-none focus:border-cyan-900 focus:ring-2 focus:ring-blue-200 transition-colors duration-200 bg-white shadow-sm hover:border-gray-300"
+                    >
+                      <option value="" className="text-gray-500">Select Column</option>
+                      {columns.map((col) => (
+                        <option key={col} value={col} className="text-gray-700">
+                          {col}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  </div>
+                {xAxis && !yAxis && (
+                  <div className="flex items-center m-4">
+                  {/* <h3 className="text-lg font-medium m-4">Possible Charts:</h3> */}
+                  <div className="flex gap-2">
+                    {getAvailableCharts().map((chart) => (
+                      <button
+                        key={chart}
+                        onClick={() => handleChartClick(chart)}
+                        className="bg-cyan-900 text-white px-4 py-2 rounded hover:bg-cyan-700"
+                      >
+                        {chart} Chart
+                      </button>
+                    ))}
+                  </div>
                 </div>
-              </div>
-            )}
-            {chartType === 'Bubble' &&
-                <div className="flex items-center gap-2">
-                <label className="whitespace-nowrap rounded-lg bg-cyan-900 text-white px-4 py-2.5 text-sm font-medium">Select Size:</label>
-                <select
-                  value={Size}
-                  onChange={(e) => setSize(e.target.value)}
-                  className="w-full border-2 border-gray-200 rounded-lg px-4 py-2.5 text-gray-700 focus:outline-none focus:border-cyan-900 focus:ring-2 focus:ring-blue-200 transition-colors duration-200 bg-white shadow-sm hover:border-gray-300"
-                >
-                  <option value="" className="text-gray-500">Select Column</option>
-                  {numericalCols.map((col) => (
-                    <option key={col} value={col} className="text-gray-700">
-                      {col}
-                    </option>
-                  ))}
-                </select>
-              </div>
-            }
+                )}
+                {xAxis && yAxis && (
+                  <div className="flex items-center m-4">
+                    {/* <h3 className="text-lg font-medium m-4">Possible Charts:</h3> */}
+                    <div className="flex gap-2">
+                      {getAvailableCharts().map((chart) => (
+                        <button
+                          key={chart}
+                          onClick={() => handleChartClick(chart)}
+                          className="bg-cyan-900 text-white px-4 py-2 rounded hover:bg-cyan-700"
+                        >
+                          {chart} Chart
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+                {chartType === 'Bubble' &&
+                    <div className="flex items-center gap-2">
+                    <label className="whitespace-nowrap rounded-lg bg-cyan-900 text-white px-4 py-2.5 text-sm font-medium">Select Size:</label>
+                    <select
+                      value={Size}
+                      onChange={(e) => setSize(e.target.value)}
+                      className="w-full border-2 border-gray-200 rounded-lg px-4 py-2.5 text-gray-700 focus:outline-none focus:border-cyan-900 focus:ring-2 focus:ring-blue-200 transition-colors duration-200 bg-white shadow-sm hover:border-gray-300"
+                    >
+                      <option value="" className="text-gray-500">Select Column</option>
+                      {numericalCols.map((col) => (
+                        <option key={col} value={col} className="text-gray-700">
+                          {col}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                }
+                </div>
+                  {chartType && !(chartType==='Bubble' && !(Size)) && (
+                    <div className="m-6 p-6 border-2 border-gray-200 rounded-xl bg-white shadow-lg hover:shadow-xl transition-shadow duration-300">
+                      {chartType === "Line" && <LineChart x={xAxis} y={yAxis} data={preview} />}
+                      {chartType === "Scatter" && <ScatterPlot x={xAxis} y={yAxis} data={preview} />}
+                      {chartType === "Bubble" && <BubbleChart x={xAxis} y={yAxis} size={Size} data={preview} />}
+                      {chartType === "Bar" && <BarChart x={xAxis} y={yAxis} data={preview} />}
+                      {chartType === "Pie" && <PieChart category={xAxis} data={preview} />}
+                      {chartType === "Histogram" && <Histogram column={xAxis} data={preview} />}
+                    </div>
+                  )}
+               </div>
+               <div className="my-10 mx-20 bg-white p-6 rounded-lg shadow-md">
+                  <h1 className="text-2xl font-semibold text-center p-4 bg-cyan-900 text-white">Dataset Query System</h1>
+                  
+                  {/* Query Input */}
+                  <div className="mt-6">
+                    <label className="block text-gray-700">Ask a Query:</label>
+                    <textarea
+                      value={query}
+                      onChange={handleQueryChange}
+                      className="w-full mt-2 p-2 border border-gray-300 rounded"
+                      rows="2"
+                    />
+                  </div>
+                  <button
+                    onClick={handleQuery}
+                    className="w-full mt-4 bg-cyan-900 text-white p-2 rounded hover:bg-cyan-700 focus:outline-none"
+                  >
+                    {loading ? 'Processing...' : 'Submit Query'}
+                  </button>
+
+                  {/* Answer */}
+                  {answer && (
+                    <div className="mt-6 p-4 bg-gray-200 border border-gray-300 rounded">
+                      <strong>Answer:</strong>
+                      <p>{answer}</p>
+                    </div>
+                  )}
+                </div>
             </div>
-              {chartType && !(chartType==='Bubble' && !(Size)) && (
-                <div className="mt-6 p-6 border-2 border-gray-200 rounded-xl bg-white shadow-lg hover:shadow-xl transition-shadow duration-300">
-                  {chartType === "Line" && <LineChart x={xAxis} y={yAxis} data={preview} />}
-                  {chartType === "Scatter" && <ScatterPlot x={xAxis} y={yAxis} data={preview} />}
-                  {chartType === "Bubble" && <BubbleChart x={xAxis} y={yAxis} size={Size} data={preview} />}
-                  {chartType === "Bar" && <BarChart x={xAxis} y={yAxis} data={preview} />}
-                  {chartType === "StackedBar" && <StackedBarChart category={xAxis} numericalColumn={yAxis} data={preview} />}
-                  {chartType === "Pie" && <PieChart category={xAxis} data={preview} />}
-                  {chartType === "Histogram" && <Histogram column={xAxis} data={preview} />}
-                </div>
-              )}
           </div>
 
 
