@@ -19,8 +19,12 @@ genai.configure(api_key=api_key)
 app = Flask(__name__)
 CORS(app)  # Allow CORS for communication with React frontend
 
+# Store the dataset globally (optional, for simplicity)
+df = None
+
 @app.route('/upload', methods=['POST'])
 def upload_file():
+    global df
     if 'file' not in request.files:
         return jsonify({'error': 'No file part'}), 400
 
@@ -65,11 +69,43 @@ def upload_file():
         return jsonify({
             'columns': list(df.columns),
             'types': column_types,
-            'preview': df.head(10).to_dict(orient='records'),
+            'preview': df.head(30).to_dict(orient='records'),
             'chart_suggestions': suggestions,
         })
     except Exception as e:
         return jsonify({'error': str(e)}), 500
+    
+
+# Route to handle user queries
+@app.route('/query', methods=['POST'])
+def handle_query():
+    global df
+    if df is None:
+        return jsonify({"error": "No dataset uploaded. Please upload a CSV file first."}), 400
+
+    query = request.json.get('query')
+    if not query:
+        return jsonify({"error": "Query is required."}), 400
+
+    # Convert dataset to string for Gemini input
+    data_str = df.to_string()
+
+    # Form the prompt for Gemini to answer the question
+    prompt = f"Answer the following question based on the dataset:\n{data_str}\n\nQuestion: {query}\nAnswer:"
+
+    # Call the Gemini API using the genai library
+    try:
+        # Specify the model to use
+        model = genai.GenerativeModel("gemini-1.5-flash")
+        
+        # Generate content based on the prompt
+        response = model.generate_content(prompt)
+        
+        # Extract the answer from the response
+        answer = response.text.strip()
+        return jsonify({"answer": answer})
+    except Exception as e:
+        return jsonify({"error": f"An error occurred: {str(e)}"}), 500
 
 
 def parse_ai_response(response_text):
